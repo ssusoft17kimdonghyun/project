@@ -2,6 +2,18 @@
 #include <stdio.h>
 int main(void)
 {
+	FILE *read_map;
+	char map_data[30][30];
+	int n, x, y;
+	read_map = fopen("map.txt", "r");
+	for (n = 0; n < 5; n++)
+		for (y = 0; y < 30; y++)
+			for (x = 0; (map[n][x-1][y] != '\n') && (x < 30); x++)
+			{
+				fscanf(read_map, "%c", &map_data[n][x][y]);
+				printf("%c", map_data[n][x][y]);
+			}
+	fclose(read_map);
 	char player_name[10];
 	
 	printf("Start....\ninput name : ");
