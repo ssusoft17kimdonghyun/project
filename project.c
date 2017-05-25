@@ -2,6 +2,7 @@
 #include <stdio.h>
 int main(void)
 {
+	// 맵파일을 읽고 map_data에 저장
 	FILE *read_map;
 	char map_data[30][30];
 	int n, x, y;
@@ -14,6 +15,8 @@ int main(void)
 				printf("%c", map_data[n][x][y]);
 			}
 	fclose(read_map);
+
+	// 사용자 이름을 player_name에 입력받음
 	char player_name[10];
 	
 	printf("Start....\ninput name : ");
