@@ -12,7 +12,7 @@ int main(void)
 			for (x = 0; (map[n][x-1][y] != '\n') && (x < 30); x++)
 			{
 				fscanf(read_map, "%c", &map_data[n][x][y]);
-				printf("%c", map_data[n][x][y]);
+				printf("%c", map_data[n][x][y]); // 입력 확인 후 삭제
 			}
 	fclose(read_map);
 
