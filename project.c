@@ -2,7 +2,9 @@
    2017.5.25 - 5.31
    20170263 김동현 */
 #include <stdio.h>
-#include <termio.h> //getch() 함수를 위한 헤더 파일
+#include <termio.h> // getch() 함수를 위한 헤더 파일
+#include <stdlib.h> //system() 함수를 위한 헤더 파일
+#include <unistd.h> // sleep() 함수를 위한 헤더 파일
 char map[5][30][30]; // 맵 파일을 저장하는 변수
 int player_x, player_y; // 플레이어의 위치
 int getch(); // 입력 함수
@@ -186,8 +188,11 @@ int main(void)
 					num_slot++;
 				}
 		printf("map%d start\n\n", n+1);
+		sleep(2);
+		system("clear");
 		while (clear < map_slot[n])
 		{
+			system("clear");
 			clear = 0;
 			for (y = 0; y < 30; y++)
 				for (x = 0; x < 30; x++)
@@ -215,7 +220,6 @@ int main(void)
 			}//else if
 		}
 		printf("\nmap%d clear\n", n+1);
-		n++;
 	}
 	printf("all map clear!\nend program\n");
 	return 0;
