@@ -1,53 +1,68 @@
 /* project 코드파일
-   2017.5.25
+   2017.5.25 - 5.31
    20170263 김동현 */
 #include <stdio.h>
-#include <termio.h>
-char map[5][30][30];
-int player_x, player_y;
-int getch();
-void movement(int, int);
+#include <termio.h> //getch() 함수를 위한 헤더 파일
+char map[5][30][30]; // 맵 파일을 저장하는 변수
+int player_x, player_y; // 플레이어의 위치
+int getch(); // 입력 함수
+void movement(int, int); // 움직임 제어하는 함수
 int main(void)
 {
-	// map 파일 읽어오고 map_file에 저장
 	FILE *read_map;
 	char map_file[1500];
-	int n = 0, x = 0, y = 0, i, tmp = 0;
-	int p = 0, m = 0, e = 0;
-	int num_p[5], num_m[5], num_e;
-	int input_ch;
-	int num_box, num_slot, map_error = 0;
+	int n = 0, x = 0, y = 0, clear = 0;
+	int p = 0, m = 0, e = 0, num_p[5], num_m[5], num_e; // 파일 오류 검사 밎 맵 저장에 사용
+	int map_slot[5], slot_x[25], slot_y[25]; // O의 개수와 위치 저장
+	int input_ch; // movement 함수 매개 변수
+	int num_box, num_slot = 0, map_error = 0; // 파일 오류 검사
 
-	if ((read_map = fopen("map.txt", "r")) == NULL)
-		printf("오류 : map.txt 파일이 비었습니다.\n");
-	//read_map = fopen("map.txt", "r");
+	// map.txt 파일 읽어오고 map_file에 저장
+	read_map = fopen("map.txt", "r");
+	if (read_map == NULL) // 파일이 없을때의 에러
+	{
+		printf("오류 : map.txt 파일이 없습니다.\n");
+		fclose(read_map);
+		return 0;
+	}
 	for (int i = 0; map_file[i-1] != 'd'; i++)
 	{
 		fscanf(read_map, "%c", &map_file[i]);
-		//printf("%c", map_file[i]);
 	}
 	fclose(read_map);
-	//printf("\n");
 
-	for ( i = 0; i < sizeof(map_file); i++)
+	for (int i = 0; i < sizeof(map_file); i++)
 	{
 		if (map_file[i] == 'p')
 		{
 			num_p[p] = i;
-			//printf("p : %d %d\n", num_p[p], p);
 			p++;
 		}
 		else if (map_file[i] == 'm')
 		{
 			num_m[m] = i;
-			//printf("m : %d %d\n", num_m[m], m);
 			m++;
 		}
 		else if (map_file[i] == 'e')
 		{
 			num_e = i;
-			//printf("e : %d\n", num_e);
+			e++;
 		}
+	}
+	if (p < 5) // 파일이 손상되었을때의 에러
+	{
+		printf("오류 : map.txt 파일이 손상되었습니다.\n");
+		return 0;
+	}
+	else if (m < 5)
+	{
+		printf("오류 : map.txt 파일이 손상되었습니다.\n");
+		return 0;
+	}
+	else if (e < 1)
+	{
+		printf("오류 : map.txt 파일이 손상되었습니다.\n");
+		return 0;
 	}
 
 	n = 0, x = 0, y = 0; // map1 을 map[0][x][y]에 저장
@@ -59,10 +74,10 @@ int main(void)
 			x = 0;
 		}
 		map[n][x][y] = map_file[i];
-		printf("%c", map[n][x][y]); // 입력상태 확인, 확인 후 삭제
+		if (map[n][x][y] == 'O')
+			map_slot[n]++;
 		x++;
 	}
-	printf("\n===%c===\n", map[0][12][8]); // 플레이어 위치 확인
 
 	n = 1, x = 0, y = 0; // map2 을 map[1][x][y]에 저장
 	for (int i = (num_p[1] + 3); i < num_m[2]; i++)
@@ -73,10 +88,10 @@ int main(void)
 			x = 0;
 		}
 		map[n][x][y] = map_file[i];
-		printf("%c", map[n][x][y]); // 입력상태 확인, 확인 후 삭제
+		if (map[n][x][y] == 'O')
+			map_slot[n]++;
 		x++;
 	}
-	printf("\n===%c===\n", map[1][7][4]); // 플레이어 위치 확인
 
 	n = 2, x = 0, y = 0; // map3 을 map[2][x][y]에 저장
 	for (int i = (num_p[2] + 3); i < num_m[3]; i++)
@@ -87,10 +102,10 @@ int main(void)
 			x = 0;
 		}
 		map[n][x][y] = map_file[i];
-		printf("%c", map[n][x][y]); // 입력상태 확인, 확인 후 삭제
+		if (map[n][x][y] == 'O')
+			map_slot[n]++;
 		x++;
 	}
-	printf("\n===%c===\n", map[2][14][1]); // 플레이어 위치 확인
 
 	n = 3, x = 0, y = 0; // map4 을 map[3][x][y]에 저장
 	for (int i = (num_p[3] + 3); i < num_m[4]; i++)
@@ -101,11 +116,10 @@ int main(void)
 			x = 0;
 		}
 		map[n][x][y] = map_file[i];
-		printf("%c", map[n][x][y]); // 입력상태 확인, 확인 후 삭제
+		if (map[n][x][y] == 'O')
+			map_slot[n]++;
 		x++;
 	}
-	printf("\n===%c===\n", map[3][8][10]); // 플레이어 위치 확인
-
 
 	n = 4, x = 0, y = 0; // map5 을 map[4][x][y]에 저장
 	for (int i = (num_p[4] + 3); i < num_e; i++)
@@ -116,23 +130,12 @@ int main(void)
 			x = 0;
 		}
 		map[n][x][y] = map_file[i];
-		printf("%c", map[n][x][y]); // 입력상태 확인, 확인 후 삭제
+		if (map[n][x][y] == 'O')
+			map_slot[n]++;
 		x++;
 	}
-	printf("\n===%c===\n", map[4][14][7]); // 플레이어 위치 확인
 
-	/*for (n = 0; n < 4; n++) // map 츨력 확인, 확인 후 삭제
-	{
-		printf("\nmap%d\n", n + 1);
-		for (y = 0; y < 30; y++)
-			for (x = 0; x< 30; x++)
-			{
-				printf("%c", map[n][x][y]);
-			}
-	}
-	printf("\n\n");
-*/
-	// map 파일 오류 검사
+	// O와 $의 개수가 다를 경우의 에러
 	for (n = 0; n < 5; n++)
 	{
 		num_box = 0;
@@ -147,6 +150,11 @@ int main(void)
 			}
 		if (num_box == num_slot)
 			continue;
+		else if (num_box == num_slot == 0)
+		{
+			printf("오류 : map%d 파일이 손상되었습니다.\n", n+1);
+			map_error = 1;
+		}
 		else if (num_box != num_slot)
 		{
 			printf("오류 : map%d 파일에 문제가 있습니다.\n", n+1);
@@ -166,37 +174,53 @@ int main(void)
 		putchar(player_name[i]);
 	printf("\n");
 
-	// map1 시작 미완성
-	/*n = 0;
-	num_slot = 1;
-	player_x = 12;
-	player_y = 8;
-	printf("map%d start\n\n", n+1);
-	while (num_slot > 0)
+	// 게임 시작
+	for (n = 0; n < 5; n++)
 	{
 		for (y = 0; y < 30; y++)
 			for (x = 0; x < 30; x++)
-				printf("%c", map[n][x][y]);
-		printf("\n(Command) : ");
-		input_ch = getch();
-		if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108)))
-			movement(n, input_ch);
-		//else if //명령어 입력시 사용
-		num_slot = 0;
-		for (y = 6; y < 9; y++)
-			for (x = 19; x < 21; x++)
-			{
-				if ((map[n][x][y] != 64) || (map[n][x][y] != 36))
-					map[n][x][y] = 79;
-				if (map[n][x][y] == 79)
+				if (map[n][x][y] == 'O')
+				{
+					slot_x[num_slot] = x;
+					slot_y[num_slot] = y;
 					num_slot++;
-			}
+				}
+		printf("map%d start\n\n", n+1);
+		while (clear < map_slot[n])
+		{
+			clear = 0;
+			for (y = 0; y < 30; y++)
+				for (x = 0; x < 30; x++)
+				{
+					printf("%c", map[n][x][y]);
+					if (map[n][x][y] == '@')
+					{
+						player_x = x;
+						player_y = y;
+					}
+				}
+			printf("\n(Command) : ");
+			input_ch = getch();
+			printf("\n");
+			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108)))
+			{
+				movement(n, input_ch);
+				for (int i = 0; i < num_slot; i++)
+				{
+					if (map[n][slot_x[i]][slot_y[i]] == ' ')
+						map[n][slot_x[i]][slot_y[i]] = 'O';
+					if (map[n][slot_x[i]][slot_y[i]] == '$')
+						clear++;
+				}
+			}//else if
+		}
+		printf("\nmap%d clear\n", n+1);
+		n++;
 	}
-	printf("\nmap%d clear\n", n+1);
-*/
+	printf("all map clear!\nend program\n");
 	return 0;
 }
-int getch(void)
+int getch(void) // 입력 함수
 {
 	int ch;
 
@@ -217,165 +241,157 @@ int getch(void)
 
 	return ch;
 }
-/*void movement(int n, int ch1) // 움직임 제어하는 함수 미완성
+void movement(int n, int ch1) // 움직임 제어하는 함수
 {
-	int tmp, ch2, ch3;
+	char ch2, ch3;
 	switch (ch1)
 	{
 		case (104) : // h 입력
 			ch2 = map[n][player_x-1][player_y];
 			ch3 = map[n][player_x-2][player_y];
-			switch (ch2)
+			if (ch2 == ' ')
 			{
-				case (32) :
-					tmp = map[n][player_x-1][player_y];
+				map[n][player_x-1][player_y] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == 'O')
+			{
+				map[n][player_x-1][player_y] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == '$')
+			{
+				if (ch3 == ' ')
+				{
+					map[n][player_x-2][player_y] = map[n][player_x-1][player_y];
 					map[n][player_x-1][player_y] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = tmp;
-					player_x--;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (79) :
+				}
+				else if (ch3 == 'O')
+				{
+					map[n][player_x-2][player_y] = map[n][player_x-1][player_y];
 					map[n][player_x-1][player_y] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = 32;
-					player_x--;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (36) :
-					switch (ch3)
-					{
-						case (32) :
-							tmp = map[n][player_x-2][player_y];
-							map[n][player_x-2][player_y] = map[n][player_x-1][player_y];
-							map[n][player_x-1][player_y] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = tmp;
-							player_x--;
-							break;
-						case (79) :
-							map[n][player_x-2][player_y] = map[n][player_x-1][player_y];
-							map[n][player_x-1][player_y] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = 32;
-							player_x--;
-							break;
-						default :
-							break;
-					}
-				default :
+				}
+				else
 					break;
-		}
+			}
+			else
+				break;
 		case (106) : // j 입력 
 			ch2 = map[n][player_x][player_y+1];
 			ch3 = map[n][player_x][player_y+2];
-			switch (ch2)
+			if (ch2 == ' ')
 			{
-				case (32) :
-					tmp = map[n][player_x][player_y+1];
+				map[n][player_x][player_y+1] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == 'O')
+			{
+				map[n][player_x][player_y+1] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == '$')
+			{
+				if (ch3 == ' ')
+				{
+					map[n][player_x][player_y+2] = map[n][player_x][player_y+1];
 					map[n][player_x][player_y+1] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = tmp;
-					player_y++;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (79) :
+				}
+				else if (ch3 == 'O')
+				{
+					map[n][player_x][player_y+2] = map[n][player_x][player_y+1];
 					map[n][player_x][player_y+1] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = 32;
-					player_y++;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (36) :
-					switch (ch3)
-					{
-						case (32) :
-							tmp = map[n][player_x][player_y+2];
-							map[n][player_x][player_y+2] = map[n][player_x][player_y+1];
-							map[n][player_x][player_y+1] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = tmp;
-							player_y++;
-							break;
-						case (79) :
-							map[n][player_x][player_y+2] = map[n][player_x][player_y+1];
-							map[n][player_x][player_y+1] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = 32;
-							player_y++;
-							break;
-						default :
-							break;
-					}
-				default :
+				}
+				else
 					break;
 			}
+			else
+				break;
 		case (107) : // k 입력
 			ch2 = map[n][player_x][player_y-1];
 			ch3 = map[n][player_x][player_y-2];
-			switch (ch2)
+			if (ch2 == ' ')
 			{
-				case (32) :
-					tmp = map[n][player_x][player_y-1];
+				map[n][player_x][player_y-1] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == 'O')
+			{
+				map[n][player_x][player_y-1] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == '$')
+			{
+				if (ch3 == ' ')
+				{
+					map[n][player_x][player_y-2] = map[n][player_x][player_y-1];
 					map[n][player_x][player_y-1] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = tmp;
-					player_y--;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (79) :
+				}
+				else if (ch3 == 'O')
+				{
+					map[n][player_x][player_y-2] = map[n][player_x][player_y-1];
 					map[n][player_x][player_y-1] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = 32;
-					player_y--;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (36) :
-					switch (ch3)
-					{
-						case (32) :
-							tmp = map[n][player_x][player_y-2];
-							map[n][player_x][player_y-2] = map[n][player_x][player_y-1];
-							map[n][player_x][player_y-1] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = tmp;
-							player_y--;
-							break;
-						case (79) :
-							map[n][player_x][player_y-2] = map[n][player_x][player_y-1];
-							map[n][player_x][player_y-1] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = 32;
-							player_y--;
-							break;
-						default :
-							break;
-					}
-				default :
+				}
+				else
 					break;
 			}
+			else
+				break;
 		case (108) : // l 입력
 			ch2 = map[n][player_x+1][player_y];
 			ch3 = map[n][player_x+2][player_y];
-			switch (ch2)
+			if (ch2 == ' ')
 			{
-				case (32) :
-					tmp = map[n][player_x+1][player_y];
+				map[n][player_x+1][player_y] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == 'O')
+			{
+				map[n][player_x+1][player_y] = map[n][player_x][player_y];
+				map[n][player_x][player_y] = ' ';
+				break;
+			}
+			else if (ch2 == '$')
+			{
+				if (ch3 == ' ')
+				{
+					map[n][player_x+2][player_y] = map[n][player_x+1][player_y];
 					map[n][player_x+1][player_y] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = tmp;
-					player_x++;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (79) :
+				}
+				else if (ch3 == 'O')
+				{
+					map[n][player_x+2][player_y] = map[n][player_x+1][player_y];
 					map[n][player_x+1][player_y] = map[n][player_x][player_y];
-					map[n][player_x][player_y] = 32;
-					player_x++;
+					map[n][player_x][player_y] = ' ';
 					break;
-				case (36) :
-					switch (ch3)
-					{
-						case (32) :
-							tmp = map[n][player_x+2][player_y];
-							map[n][player_x+2][player_y] = map[n][player_x+1][player_y];
-							map[n][player_x+1][player_y] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = tmp;
-							player_x++;
-							break;
-						case (79) :
-							map[n][player_x+2][player_y] = map[n][player_x+1][player_y];
-							map[n][player_x+1][player_y] = map[n][player_x][player_y];
-							map[n][player_x][player_y] = 32;
-							player_x++;
-							break;
-						default :
-							break;
-					}
-				default :
+				}
+				else
 					break;
 			}
+			else
+				break;
 		default :
 			break;
 	}
 	return;
-}*/
+}
