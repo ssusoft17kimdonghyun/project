@@ -7,6 +7,7 @@
 #include <unistd.h> // sleep() 함수를 위한 헤더 파일
 char map[5][30][30]; // 맵 파일을 저장하는 변수
 int player_x, player_y; // 플레이어의 위치
+int stage; //스테이지 번호 지정
 int getch(); // 입력 함수
 void movement(int, int); // 움직임 제어하는 함수
 int main(void)
