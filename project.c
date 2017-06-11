@@ -8,21 +8,25 @@
 char map_file[1500] = {0}; // 전역변수이므로 초기화 필요함
 char origin_map[5][30][30] = {0}, map[5][30][30] = {0}; // 맵 파일을 저장하는 변수
 int player_x = 0, player_y = 0; // 플레이어의 위치
-int p = 0, m = 0, e = 0, num_p[5], num_m[5], num_e; // 파일 오류 검사 밎 맵 저장에 사용
+int p = 0, m = 0, e = 0, num_p[5] = {0}, num_m[5] = {0}, num_e = 0; // 파일 오류 검사 밎 맵 저장에 사용
 int n = 0, x = 0, y = 0;
 int stage = 0; //스테이지 번호 지정
+char player_name[11] = {0}; // 플레이어 이름
+int slot_x[25] = {0}, slot_y[25] = {0}, num_slot = 0; // O의 위치 저장
 int getch(); // 입력 함수
 void movement(int, int); // 움직임 제어하는 함수
+void display_help(void);
 int save(int);
-int file_load(int);
-int new(int);
+int file_load(void);
+int replay(int);
+int new(void);
 int main(void)
 {
 	FILE *read_map;
 	int clear = 0;
-	int map_slot[5] = {0}, slot_x[25] = {0}, slot_y[25] = {0}; // O의 개수와 위치 저장
-	int input_ch; // movement 함수 매개 변수
-	int num_box, num_slot = 0, map_error = 0; // 파일 오류 검사
+	int map_slot[5] = {0}; // O의 개수 저장
+	int input_ch = 0; // movement 함수 매개 변수
+	int num_box = 0, map_error = 0; // 파일 오류 검사
 
 	// map.txt 파일 읽어오고 map_file에 저장
 	read_map = fopen("map.txt", "r");
@@ -178,7 +182,6 @@ int main(void)
 		return 0;
 
 	// 사용자 이름 입력
-	char player_name[11];
 	printf("\nStart....\n\ninput name : ");
 	scanf("%10s", player_name);
 	getchar();
@@ -218,7 +221,6 @@ int main(void)
 				}
 			printf("\n(Command) : ");
 			input_ch = getch();
-			//printf("\n");
 			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108)))
 			{
 				movement(n, input_ch);
@@ -230,52 +232,57 @@ int main(void)
 						clear++;
 				}
 			}
-			// save, load, exit, new, 기능 유준열 제작
+			// load, replay 기능 김동현 제작
 			else if (input_ch == 102) // 102 = 아스키코드표 'f'
 			{
 				x = 0, y = 0;
 				printf("%c\n", input_ch);
-				file_load(stage);
+				n = file_load();
+				printf("\nend\n");//
 			}
+			else if (input_ch == 114) // 114 = 아스키코드표 'r'
+			{
+				x = 0, y = 0;
+				printf("%c\n", input_ch);
+				replay(stage);
+			}
+			else if (input_ch == 100) // 100 = 아스키코드표 'd'
+			{
+				printf("%c\n", input_ch);
+				system("clear");
+				display_help();
+				printf("Press Any key...");
+				getch();
+				system("clear");
+			}
+			// save, exit, new, 기능 유준열 제작
 			else if (input_ch == 101) // 101 = 아스키코드표 'e'
 			{
-				/*if (stage == 0) // 스테이지에 따른 저장하는 함수 호출
-					save(0);
-				else if (stage == 1)
-				 	save(1);
-				else if (stage == 2)
-					save(2);
-				else if (stage == 3)
-					save(3);
-				else if (stage == 4)
-					save(4);
-		 		exit(0);*/ // 파일 종료 함수
 				x = 0, y = 0;
 				printf("%c\n", input_ch);
 				save(stage);
-				printf("\nend program\n");
+				printf("\nend program\n\n");
+				printf("SEE YOU %s....\n", player_name);
 				return 0;
 			}
 			else if (input_ch == 115) // 115 = 아스키코드표 's'
 			{
-				/*if (stage == 0) // 스테이지에 따른 저장하는 함수 호출
-					save(0);
-				else if (stage == 1)
-					save(1);
-				else if (stage == 2)
-					save(2);
-				else if (stage == 3)
-					save(3);
-				else if (stage == 4)
-					save(4);*/
 				x = 0, y = 0;
 				printf("%c\n", input_ch);
 				save(stage);
 			}
+			else if (input_ch == 110) // 110 = 아스키코드표 'n'
+			{
+				x = 0, y = 0;
+				printf("%c\n", input_ch);
+				n = new();
+				clear = 0;
+			}
 		}
 		printf("\nmap%d clear\n", n+1);
 	}
-	printf("all map clear!\nend program\n");
+	printf("\nall map clear!\n\nend program\n\n");
+	printf("SEE YOU %s....\n", player_name);
 	return 0;
 }
 int getch(void) // 입력 함수 김동현 제작
@@ -454,92 +461,135 @@ void movement(int n, int ch1) // 움직임 제어하는 함수 김동현 제작
 	return;
 }
 int save(int stage) // 저장 함수 유준열 제작
-{ // 현재상태 저장이므로 map[stage][x][y] 사용해야 함
-   // 각각의 for문 밑에 시간을 저장하는 기능을 추가시켜야함
+{ 
    FILE *save;
-   save = fopen("sokoban.txt", "w"); // txt 파일에 저장해야 함
-   /*if (stage == 0)
-   {
-	   for (y = 0; y < 30; y++)
-		   for (x = 0; x < 30; x++)
-		   {
-			   fprintf(save, "%c", map[stage][x][y]);
-		   }
-   }
-   else if (stage == 1)
-   {
-	   for (y = 0; y < 30; y++)
-		   for (x = 0; x < 30; x++)
-		   {
-			   fprintf(save, "%c", map[stage][x][y]);
-		   }
-   }
-   else if (stage == 2)
-   {
-	   for (y = 0; y < 30; y++)
-		   for (x = 0; x < 30; x++)
-		   {
-			   fprintf(save, "%c", map[stage][x][y]);
-		   }
-   }
-   else if (stage == 3)
-   {
-	   for (y = 0; y < 30; y++)
-		   for (x = 0; x < 30; x++)
-		   {
-			   fprintf(save, "%c", map[stage][x][y]);
-		   }
-   }
-   else if (stage == 4)
-   {
-	   for (y = 0; y < 30; y++)
-		   for (x = 0; x < 30; x++)
-		   {
-			   fprintf(save, "%c", map[stage][x][y]);
-		   }
-   }*/
+   save = fopen("sokoban.txt", "w");
+   fprintf(save, "player\n*%s&\nmap\n*%d&\n*", player_name, stage);
    for (y = 0; y < 30; y++)
 	   for (x = 0; x < 30; x++)
 	   {
 		   fprintf(save, "%c", map[stage][x][y]);
 	   }
+   fprintf(save, "&end\n");
    fclose(save);
    return 0;
 }
-   // project.c를 참고해서 만들었으므로 원래 파일이 바뀌면 수정바람
-int file_load(int stage) // 파일로드 함수 유준열 제작
+int file_load(void) // 파일로드 함수 김동현 제작
 {
 	FILE *load;
-	int data[350], end, i;
+	int data[1000] = {0}, num_1[3] = {0}, num_2[3] = {0}, j = 0, k = 0;
+	int start = 0, end = 0;
 	load = fopen("sokoban.txt", "r");
-	for (i = 0; /*data[i-1]*/fscanf(load, "%c", &data[i]) != EOF; i++)
+	for (int i = 0; i < 1000; i++)
 	{
-		//fscanf(load, "%c", &data[i]);
-		//printf("%c", data[i]);
-		x = 0, y = 0;
-		if (map[stage][x][y] == '\n')
+		fscanf(load, "%c", &data[i]);
+		printf("%d ", data[i]);
+	}
+	fclose(load);
+	// * 부터 & 까지가 받아들여야 하는 데이터
+	for (int i = 0; i < 1000; i++)
+	{
+		if (data[i] == '*')
+		{
+			num_1[j] = i;
+			j++;
+		}
+		else if (data[i] == '&')
+		{
+			num_2[k] = i;
+			k++;
+		}
+	}
+	x = 0, y = 0, j = 0;
+	for (int i = 0; i < 11; i++)
+	{
+		player_name[i] = 0;
+	}
+	for (int i = num_1[0]+1; i < num_2[0]; i++)
+	{
+		player_name[j] = data[i];
+		j++;
+	}
+	stage = data[num_1[1]+1] - 48;
+	start = num_1[2] + 1;
+	end = num_2[2];
+	for (y = 0; y < 30; y++)
+		for (x = 0; x < 30; x++)
+		{
+			map[stage][x][y] = 0;
+		}
+	x = 0, y = 0;
+	for (int i = start; i < end; i++)
+	{
+		if (data[i-1] == 10)
 		{
 			y++;
 			x = 0;
 		}
 		map[stage][x][y] = data[i];
 		x++;
+		if (x > 30)
+			break;
 	}
-	/*end = i;
-	for (int j = 0; j < end; j++)
+	for (int i = 0; i < 25; i++)
 	{
-		if (map[stage][x-1][y] == '\n')
+		slot_x[i] = 0;
+		slot_y[i] = 0;
+	}
+	num_slot = 0, stage = 0;
+	for (y = 0; y < 30; y++)
+		for (x = 0; x < 30; x++)
+			if (map[stage][x][y] == 'O')
+			{
+				slot_x[num_slot] = x;
+				slot_y[num_slot] = y;
+				num_slot++;
+			}
+	return stage;
+}
+int new(void) // 처음부터 다시시작 함수 유준열 제작
+{
+	stage = 0, x = 0, y = 0;
+	while (stage < 5)
+	{
+		for (y = 0; y < 30; y++)
+			for (x = 0; x < 30; x++)
+			{
+				map[stage][x][y] = origin_map[stage][x][y];
+			}
+		stage++;
+	}
+	num_slot = 0, stage = 0;
+	for (y = 0; y < 30; y++)
+		for (x = 0; x < 30; x++)
+			if (map[stage][x][y] == 'O')
+			{
+				slot_x[num_slot] = x;
+				slot_y[num_slot] = y;
+				num_slot++;
+			}
+	return stage;
+}
+int replay(int stage) // 해당 맵 다시시작 함수 김동현 제작
+{
+	x = 0, y = 0;
+	for (y = 0; y < 30; y++)
+		for (x = 0; x < 30; x++)
 		{
-			y++;
-			x = 0;
+			map[stage][x][y] = origin_map[stage][x][y];
 		}
-		map[stage][x][y] = data[j];
-		x++;
-	}*/
-	fclose(load);
 	return 0;
 }
-int new(int stage) // 맵 원본배열인 origin_map[n][x][y] 사용
+void display_help(void) // 도움말 함수 김동현 제작
 {
-
+	printf("\nh(왼쪽), j(아래), k(위), l(오른쪽)\n");
+	printf("u(undo)\n");
+	printf("r(replay)\n");
+	printf("n(new)\n");
+	printf("e(exit)\n");
+	printf("s(save)\n");
+	printf("f(file load)\n");
+	printf("d(display help)\n");
+	printf("t(top)\n\n");
+	return;
 }
