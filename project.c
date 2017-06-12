@@ -15,11 +15,11 @@ char player_name[11] = {0}; // 플레이어 이름
 int slot_x[25] = {0}, slot_y[25] = {0}, num_slot = 0; // O의 위치 저장
 int getch(); // 입력 함수
 void movement(int, int); // 움직임 제어하는 함수
-void display_help(void);
-int save(int);
-int file_load(void);
-int replay(int);
-int new(void);
+void display_help(void); // 도움말 기능
+int save(int); // 저장 기능
+int file_load(void); // 불러오기 기능
+int replay(int); // 재시작 기능
+int new(void); // 처음부터 다시 시작 기능
 int main(void)
 {
 	FILE *read_map;
@@ -43,7 +43,7 @@ int main(void)
 	fclose(read_map);
 
 	for (int i = 0; i < sizeof(map_file); i++)
-	{
+	{ // map.txt 의 map 과 end 를 이용하여 맵 파일 읽어드림
 		if (map_file[i] == 'p')
 		{
 			num_p[p] = i;
@@ -182,7 +182,6 @@ int main(void)
 	// 사용자 이름 입력
 	printf("\nStart....\n\ninput name : ");
 	scanf("%10s", player_name);
-	getchar();
 	printf("\nHello %s\n", player_name);
 
 	// 게임 시작
@@ -219,8 +218,8 @@ int main(void)
 				}
 			printf("\n(Command) : ");
 			input_ch = getch();
-			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108))) // h, j, k, l 입력
-			{
+			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108)))
+			{ // h, j, k, l 입력
 				movement(n, input_ch);
 				for (int i = 0; i < num_slot; i++) // O 가 사라지지 않도록 함
 				{
@@ -507,11 +506,11 @@ int file_load(void) // 파일로드 함수 김동현 제작
 		}
 	}
 	x = 0, y = 0, j = 0;
-	for (int i = 0; i < 11; i++)
+	for (int i = 0; i < 11; i++) // 플레이어 이름 입력받음
 	{
 		player_name[i] = 0;
 	}
-	for (int i = num_1[0]+1; i < num_2[0]; i++)
+	for (int i = num_1[0]+1; i < num_2[0]; i++) // 맵 번호 입력받음
 	{
 		player_name[j] = data[i];
 		j++;
@@ -525,7 +524,7 @@ int file_load(void) // 파일로드 함수 김동현 제작
 			map[stage][x][y] = 0;
 		}
 	x = 0, y = 0;
-	for (int i = start; i < end; i++)
+	for (int i = start; i < end; i++) // 맵 입력받음
 	{
 		if (map[stage][x-1][y] == 10)
 		{
@@ -548,7 +547,7 @@ int file_load(void) // 파일로드 함수 김동현 제작
 	num_slot = 0;
 	for (y = 0; y < 30; y++)
 		for (x = 0; x < 30; x++)
-			if (origin_map[stage][x][y] == 'O')
+			if (origin_map[stage][x][y] == 'O') // O 위치 확인
 			{
 				slot_x[num_slot] = x;
 				slot_y[num_slot] = y;
@@ -571,7 +570,7 @@ int new(void) // 처음부터 다시시작 함수 유준열 제작
 	num_slot = 0, stage = 0;
 	for (y = 0; y < 30; y++)
 		for (x = 0; x < 30; x++)
-			if (map[stage][x][y] == 'O')
+			if (map[stage][x][y] == 'O') // O 위치 확인
 			{
 				slot_x[num_slot] = x;
 				slot_y[num_slot] = y;
