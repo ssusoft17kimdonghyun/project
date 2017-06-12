@@ -9,7 +9,7 @@ char map_file[1500] = {0}; // 전역변수이므로 초기화 필요함
 char origin_map[5][30][30] = {0}, map[5][30][30] = {0}; // 맵 파일을 저장하는 변수
 int player_x = 0, player_y = 0; // 플레이어의 위치
 int p = 0, m = 0, e = 0, num_p[5] = {0}, num_m[5] = {0}, num_e = 0; // 파일 오류 검사 밎 맵 저장에 사용
-int n = 0, x = 0, y = 0;
+int n = 0, x = 0, y = 0; // 맵 좌표를 저장하는 변수
 int stage = 0; //스테이지 번호 지정
 char player_name[11] = {0}; // 플레이어 이름
 int slot_x[25] = {0}, slot_y[25] = {0}, num_slot = 0; // O의 위치 저장
@@ -165,9 +165,7 @@ int main(void)
 				else if (map[n][x][y] == 'O')
 					num_slot++;
 			}
-		if (num_box == num_slot)
-			continue;
-		else if (num_box == num_slot == 0)
+		if (num_box == num_slot == 0)
 		{
 			printf("오류 : map%d 파일이 손상되었습니다.\n", n+1);
 			map_error = 1;
@@ -195,7 +193,7 @@ int main(void)
 		num_slot = 0;
 		for (y = 0; y < 30; y++)
 			for (x = 0; x < 30; x++)
-				if (map[n][x][y] == 'O')
+				if (map[n][x][y] == 'O') // O 의 좌표를 저장
 				{
 					slot_x[num_slot] = x;
 					slot_y[num_slot] = y;
@@ -213,7 +211,7 @@ int main(void)
 				for (x = 0; x < 30; x++)
 				{
 					printf("%c", map[n][x][y]);
-					if (map[n][x][y] == '@')
+					if (map[n][x][y] == '@') // 플레이어 위치 저장
 					{
 						player_x = x;
 						player_y = y;
@@ -221,10 +219,10 @@ int main(void)
 				}
 			printf("\n(Command) : ");
 			input_ch = getch();
-			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108)))
+			if (((input_ch == 104) || (input_ch == 106)) || ((input_ch == 107) || (input_ch == 108))) // h, j, k, l 입력
 			{
 				movement(n, input_ch);
-				for (int i = 0; i < num_slot; i++)
+				for (int i = 0; i < num_slot; i++) // O 가 사라지지 않도록 함
 				{
 					if (map[n][slot_x[i]][slot_y[i]] == ' ')
 						map[n][slot_x[i]][slot_y[i]] = 'O';
@@ -232,7 +230,7 @@ int main(void)
 						clear++;
 				}
 			}
-			// load, replay 기능 김동현 제작
+			// load, replay, display help 기능 김동현 제작
 			else if (input_ch == 102) // 102 = 아스키코드표 'f'
 			{
 				x = 0, y = 0;
@@ -255,7 +253,7 @@ int main(void)
 				getch();
 				system("clear");
 			}
-			// save, exit, new, 기능 유준열 제작
+			// exit, save, new, 기능 유준열 제작
 			else if (input_ch == 101) // 101 = 아스키코드표 'e'
 			{
 				x = 0, y = 0;
@@ -308,6 +306,8 @@ int getch(void) // 입력 함수 김동현 제작
 }
 void movement(int n, int ch1) // 움직임 제어하는 함수 김동현 제작
 {
+	// 움직이려는 위치의 앞의 값에 따라 위치변경 또는 공백 삽입
+	// O 에서는 @ 나 $ 가 아닐 경우, 공백으로 변경 후 다시 O 삽입
 	char ch2, ch3;
 	switch (ch1)
 	{
@@ -462,17 +462,24 @@ void movement(int n, int ch1) // 움직임 제어하는 함수 김동현 제작
 }
 int save(int stage) // 저장 함수 유준열 제작
 { 
-   FILE *save;
-   save = fopen("sokoban.txt", "w");
-   fprintf(save, "player\n*%s&\nmap\n*%d&\n*", player_name, stage);
-   for (y = 0; y < 30; y++)
-	   for (x = 0; x < 30; x++)
-	   {
-		   fprintf(save, "%c", map[stage][x][y]);
-	   }
-   fprintf(save, "&end\n");
-   fclose(save);
-   return 0;
+	// 불러와야 할 데이터를 * 과 & 사이에 입력하여 저장
+	FILE *save;
+	char data[500];
+	save = fopen("sokoban.txt", "w");
+	fprintf(save, "player\n*%s&\nmap\n*%d&\n*", player_name, stage);
+	for (y = 0; y < 30; y++)
+		for (x = 0; x < 30; x++)
+		{
+			if (map[stage][x][y] != 0)
+			{
+				fprintf(save, "%c", map[stage][x][y]);
+			}
+			else
+				continue;
+		}
+	fprintf(save, "&end\n");
+	fclose(save);
+	return 0;
 }
 int file_load(void) // 파일로드 함수 김동현 제작
 {
@@ -483,7 +490,6 @@ int file_load(void) // 파일로드 함수 김동현 제작
 	for (int i = 0; i < 1000; i++)
 	{
 		fscanf(load, "%c", &data[i]);
-		printf("%d ", data[i]);
 	}
 	fclose(load);
 	// * 부터 & 까지가 받아들여야 하는 데이터
@@ -513,7 +519,7 @@ int file_load(void) // 파일로드 함수 김동현 제작
 	stage = data[num_1[1]+1] - 48;
 	start = num_1[2] + 1;
 	end = num_2[2];
-	for (y = 0; y < 30; y++)
+	for (y = 0; y < 30; y++) // map 배열 초기화
 		for (x = 0; x < 30; x++)
 		{
 			map[stage][x][y] = 0;
@@ -521,25 +527,28 @@ int file_load(void) // 파일로드 함수 김동현 제작
 	x = 0, y = 0;
 	for (int i = start; i < end; i++)
 	{
-		if (data[i-1] == 10)
+		if (map[stage][x-1][y] == 10)
 		{
 			y++;
 			x = 0;
 		}
 		map[stage][x][y] = data[i];
 		x++;
-		if (x > 30)
-			break;
+		if (x >= 30)
+		{
+			y++;
+			x = 0;
+		}
 	}
-	for (int i = 0; i < 25; i++)
+	for (int i = 0; i < 25; i++) // slot 배열 초기화
 	{
 		slot_x[i] = 0;
 		slot_y[i] = 0;
 	}
-	num_slot = 0, stage = 0;
+	num_slot = 0;
 	for (y = 0; y < 30; y++)
 		for (x = 0; x < 30; x++)
-			if (map[stage][x][y] == 'O')
+			if (origin_map[stage][x][y] == 'O')
 			{
 				slot_x[num_slot] = x;
 				slot_y[num_slot] = y;
