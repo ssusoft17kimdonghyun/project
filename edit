@@ -1,0 +1,84 @@
+#include <stdlib.h> // exit() (파일 종료 함수)를 사용하기 위한 헤더
+int save(int stage) // stage = 스테이지 번호 (0~4) 전역변수로 추가바람
+{
+   // 각각의 for문 밑에 시간을 저장하는 기능을 추가시켜야함
+   FILE *save;
+   save = fopen("sokoban", "w");
+   if (stage == 0)
+   {
+	   for (int i = 5; i < 268; i++)
+		   fprintf(save, "%c", map_file[i]); //스테이지 1이였을 때 맵저장
+   }
+   else if (stage == 1)
+   {
+	   for (int i = 274; i < 433; i++)
+		   fprintf(save, "%c", map_file[i]); //스테이지 2였을 때 맵저장
+   }
+   else if (stage == 2)
+   {
+	   for (int i = 439; i < 628; i++)
+		   fprintf(save, "%c", map_file[i]); //스테이지 3이였을 때 맵저장
+   }
+   else if (stage == 3)
+   {
+	   for (int i = 634; i < 945; i++)
+		   fprintf(save, "%c", map_file[i]); //스테이지 4였을 때 맵저장
+   }
+   else if (stage == 4)
+   {
+	   for (int i = 951; i < 1197; i++)
+		   fprintf(save, "%c", map_file[i]); //스테이지 5였을 때 맵저장
+   }
+   fclose(save);
+   return 0;
+}
+   // project.c를 참고해서 만들었으므로 원래 파일이 바뀌면 수정바람
+int file_load(void) // 파일로드 함수
+{
+	FILE *load;
+	load = fopen("sokoban", "r");
+	for (i = 0; i < 311; i++)
+	{
+		fscanf(load, "%c", %data);
+		printf("%c", data);
+	}
+	fclose(load);
+	return 0;
+}
+  if (input_ch == 102) // 102 = 아스키코드표 'f'
+  {
+	  file_load();
+  }
+  
+  if (input_ch == 101) // 101 = 아스키코드표 'e'
+  {
+	  if (stage == 0) // 스테이지에 따른 저장하는 함수 호출
+		  save(0);
+	  else if (stage == 1)
+		  save(1);
+	  else if (stage == 2)
+		  save(2);
+	  else if (stage == 3)
+		  save(3);
+	  else if (stage == 4)
+		  save(4);
+  }
+  exit(0); // 파일 종료 함수
+
+  if (input_ch == 115) // 115 = 아스키코드표 's'
+{
+	if (stage == 0) // 스테이지에 따른 저장하는 함수 호출
+		save(0);
+	else if (stage == 1)
+		save(1);
+	else if (stage == 2)
+		save(2);
+	else if (stage == 3)
+		save(3);
+	else if (stage == 4)
+		save(4);
+}
+int new(int stage)
+{
+
+}
